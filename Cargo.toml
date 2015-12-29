@@ -1,0 +1,4 @@
+[package]
+name = "rust-wc"
+version = "0.1.0"
+authors = ["Matthew Nicholson <matt@matt-land.com>"]

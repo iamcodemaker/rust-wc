@@ -1,0 +1,4 @@
+[root]
+name = "rust-wc"
+version = "0.1.0"
+
