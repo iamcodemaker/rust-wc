@@ -5,26 +5,8 @@ use std::io::BufReader;
 use std::io::prelude::*;
 use std::fs::File;
 use std::cmp::max;
-
-struct Count {
-    newlines: u32,
-    words: u32,
-    bytes: u32,
-    chars: u32,
-    max_line_length: u32,
-}
-
-impl Count {
-    fn new() -> Self {
-        Count {
-            newlines: 0,
-            words: 0,
-            bytes: 0,
-            chars: 0,
-            max_line_length: 0,
-        }
-    }
-}
+extern crate rust_wc;
+use rust_wc::counter::Count;
 
 fn main() {
     if env::args().count() != 2 {
