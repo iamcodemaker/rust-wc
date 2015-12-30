@@ -42,10 +42,12 @@ impl Count {
             match c {
                 '\n' => {
                     count.newlines += 1;
-                    count.max_line_length = max(count.max_line_length, current_line_length);
                     current_line_length = 0;
                 }
-                _ => current_line_length += 1,
+                _ => {
+                    current_line_length += 1;
+                    count.max_line_length = max(count.max_line_length, current_line_length);
+                }
             }
 
             state = match state {
@@ -81,6 +83,16 @@ mod tests {
         assert_eq!(count.words, 1);
         assert_eq!(count.bytes, 5);
         assert_eq!(count.chars, 5);
+        assert_eq!(count.max_line_length, 4);
+    }
+
+    #[test]
+    fn one_word_no_newline() {
+        let count = Count::count(vec_from_string("word").into_iter()).unwrap();
+        assert_eq!(count.newlines, 0);
+        assert_eq!(count.words, 1);
+        assert_eq!(count.bytes, 4);
+        assert_eq!(count.chars, 4);
         assert_eq!(count.max_line_length, 4);
     }
 }
