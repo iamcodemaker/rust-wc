@@ -63,3 +63,24 @@ impl Count {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use std::io;
+    use super::Count;
+
+    fn vec_from_string(s: &str) -> Vec<io::Result<u8>> {
+        s.bytes()
+            .map(|c| Ok(c))
+            .collect()
+    }
+
+    #[test]
+    fn one_word() {
+        let count = Count::count(vec_from_string("word\n").into_iter()).unwrap();
+        assert_eq!(count.newlines, 1);
+        assert_eq!(count.words, 1);
+        assert_eq!(count.bytes, 5);
+        assert_eq!(count.chars, 5);
+        assert_eq!(count.max_line_length, 4);
+    }
+}
