@@ -1,54 +1,11 @@
 use std::env;
 use std::process;
 use std::path::Path;
-use std::io::{self, BufReader};
+use std::io::BufReader;
 use std::io::prelude::*;
 use std::fs::File;
-use std::cmp::max;
 extern crate rust_wc;
 use rust_wc::counter::Count;
-
-/// Generate newline, word, character, byte, and maximum line length counts for the given iterator
-/// over a set of bytes. A word is a non-zero-length sequence of characters delimited by white
-/// space.
-fn count<I>(bytes: I) -> io::Result<Count>
-    where I: Iterator<Item=io::Result<u8>>
-{
-    enum State {
-        Whitespace,
-        Word,
-    }
-
-    let mut count = Count::new();
-    let mut current_line_length = 0;
-
-    let mut state = State::Whitespace;
-    for c in bytes {
-        count.bytes += 1;
-        count.chars += 1; // XXX what is a char?
-        let c = try!(c) as char;
-        match c {
-            '\n' => {
-                count.newlines += 1;
-                count.max_line_length = max(count.max_line_length, current_line_length);
-                current_line_length = 0;
-            }
-            _ => current_line_length += 1,
-        }
-
-        state = match state {
-            State::Whitespace if !c.is_whitespace() => {
-                count.words += 1;
-                State::Word
-            }
-            State::Word if c.is_whitespace() => State::Whitespace,
-            state => state
-        }
-
-    }
-
-    Ok(count)
-}
 
 fn main() {
     if env::args().count() != 2 {
@@ -87,7 +44,7 @@ fn main() {
     }
 
     let reader = BufReader::new(file);
-    let count = match count(reader.bytes()) {
+    let count = match Count::count(reader.bytes()) {
         Ok(count) => count,
         Err(e) => {
             println!("error reading file: {:?}", e);
