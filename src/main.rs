@@ -32,6 +32,8 @@ fn main() {
         }
     };
 
+    // XXX we don't need this, reader.bytes() will detect the error when we attempt to read the
+    // file and result in error code 21
     if metadata.is_dir() {
         println!("{:?} is a directory", path);
         process::exit(1);
