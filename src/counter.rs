@@ -95,4 +95,28 @@ mod tests {
         assert_eq!(count.chars, 4);
         assert_eq!(count.max_line, 4);
     }
+
+    #[test]
+    fn words_and_whitespace() {
+        let count = Count::count(vec_from_string("   words and  \t\n  whitespace\n").into_iter()).unwrap();
+        assert_eq!(count.newlines, 2);
+        assert_eq!(count.words, 3);
+        assert_eq!(count.bytes, 29);
+        assert_eq!(count.chars, 29);
+        assert_eq!(count.max_line, 15);
+    }
+
+    #[test]
+    fn line_length() {
+        let count = Count::count(vec_from_string(
+r"Testing out some long lines to see if it picks the largest one correctly.
+That last line was fairly long, but I think we can do better.
+Apparentlly not.
+Hahaha, just kidding! Of course we can do better. I can go on forever baby! Why don't we start with a list of my favorite movies. Back to the Future, The Last Dragon, Lock Stock and Two Smoking Barrels, Jurassic Park, Casablanca, Pulp Fiction, Forest Gump, City of God. I think that's enough.
+
+And a short line to end it.
+").into_iter()).unwrap();
+        assert_eq!(count.newlines, 6);
+        assert_eq!(count.max_line, 292);
+    }
 }
