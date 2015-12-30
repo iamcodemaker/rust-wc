@@ -38,16 +38,15 @@ impl Count {
         for c in bytes {
             count.bytes += 1;
             count.chars += 1; // XXX what is a char?
+
             let c = try!(c) as char;
-            match c {
-                '\n' => {
-                    count.newlines += 1;
-                    current_line_length = 0;
-                }
-                _ => {
-                    current_line_length += 1;
-                    count.max_line = max(count.max_line, current_line_length);
-                }
+            if c == '\n' {
+                count.newlines += 1;
+                current_line_length = 0;
+            }
+            else {
+                current_line_length += 1;
+                count.max_line = max(count.max_line, current_line_length);
             }
 
             state = match state {
