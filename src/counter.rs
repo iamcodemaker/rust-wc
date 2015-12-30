@@ -6,7 +6,7 @@ pub struct Count {
     pub words: u32,
     pub bytes: u32,
     pub chars: u32,
-    pub max_line_length: u32,
+    pub max_line: u32,
 }
 
 impl Count {
@@ -16,7 +16,7 @@ impl Count {
             words: 0,
             bytes: 0,
             chars: 0,
-            max_line_length: 0,
+            max_line: 0,
         }
     }
 
@@ -46,7 +46,7 @@ impl Count {
                 }
                 _ => {
                     current_line_length += 1;
-                    count.max_line_length = max(count.max_line_length, current_line_length);
+                    count.max_line = max(count.max_line, current_line_length);
                 }
             }
 
@@ -83,7 +83,7 @@ mod tests {
         assert_eq!(count.words, 1);
         assert_eq!(count.bytes, 5);
         assert_eq!(count.chars, 5);
-        assert_eq!(count.max_line_length, 4);
+        assert_eq!(count.max_line, 4);
     }
 
     #[test]
@@ -93,6 +93,6 @@ mod tests {
         assert_eq!(count.words, 1);
         assert_eq!(count.bytes, 4);
         assert_eq!(count.chars, 4);
-        assert_eq!(count.max_line_length, 4);
+        assert_eq!(count.max_line, 4);
     }
 }

@@ -47,5 +47,5 @@ fn main() {
     };
 
     // XXX the formatting is such that each field takes up the space of the longest output field
-    println!("{} {} {} {} {} {:?}", count.newlines, count.words, count.chars, count.bytes, count.max_line_length, path);
+    println!("{} {} {} {} {} {:?}", count.newlines, count.words, count.chars, count.bytes, count.max_line, path);
 }
