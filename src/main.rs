@@ -6,6 +6,26 @@ use std::io::prelude::*;
 use std::fs::File;
 use std::cmp::max;
 
+struct Count {
+    newlines: u32,
+    words: u32,
+    bytes: u32,
+    chars: u32,
+    max_line_length: u32,
+}
+
+impl Count {
+    fn new() -> Self {
+        Count {
+            newlines: 0,
+            words: 0,
+            bytes: 0,
+            chars: 0,
+            max_line_length: 0,
+        }
+    }
+}
+
 fn main() {
     if env::args().count() != 2 {
         println!("error: invalid arguments");
@@ -42,23 +62,19 @@ fn main() {
         Word,
     }
 
-    let mut newline_count = 0;
-    let mut word_count = 0;
-    let mut byte_count = 0;
-    let mut char_count = 0;
-    let mut max_line_length = 0;
+    let mut count = Count::new();
     let mut current_line_length = 0;
 
     let mut state = State::Whitespace;
     let reader = BufReader::new(file);
     for c in reader.bytes() {
-        byte_count += 1;
-        char_count += 1; // XXX what is a char?
+        count.bytes += 1;
+        count.chars += 1; // XXX what is a char?
         let c = c.unwrap() as char;
         match c {
             '\n' => {
-                newline_count += 1;
-                max_line_length = max(max_line_length, current_line_length);
+                count.newlines += 1;
+                count.max_line_length = max(count.max_line_length, current_line_length);
                 current_line_length = 0;
             }
             _ => current_line_length += 1,
@@ -66,7 +82,7 @@ fn main() {
 
         state = match state {
             State::Whitespace if !c.is_whitespace() => {
-                word_count += 1;
+                count.words += 1;
                 State::Word
             }
             State::Word if c.is_whitespace() => State::Whitespace,
@@ -82,5 +98,5 @@ fn main() {
     }
 
     // XXX the formatting is such that each field takes up the space of the longest output field
-    println!("{} {} {} {} {} {:?}", newline_count, word_count, char_count, byte_count, max_line_length, path);
+    println!("{} {} {} {} {} {:?}", count.newlines, count.words, count.chars, count.bytes, count.max_line_length, path);
 }
