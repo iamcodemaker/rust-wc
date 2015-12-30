@@ -37,7 +37,10 @@ impl Count {
         let mut state = State::Whitespace;
         for c in bytes {
             count.bytes += 1;
-            count.chars += 1; // XXX what is a char?
+            // XXX what is a char? Keep a buffer that is 4 bytes long and use std::char::from_u32
+            // to count characters. According to the internet, this is for counting unicode
+            // characters.
+            count.chars += 1;
 
             let c = try!(c) as char;
             if c == '\n' {
