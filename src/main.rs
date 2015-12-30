@@ -37,12 +37,6 @@ fn main() {
         process::exit(1);
     }
 
-
-    enum State {
-        Whitespace,
-        Word,
-    }
-
     let reader = BufReader::new(file);
     let count = match Count::count(reader.bytes()) {
         Ok(count) => count,
