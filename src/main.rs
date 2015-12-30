@@ -11,7 +11,7 @@ use rust_wc::counter::Count;
 /// Generate newline, word, character, byte, and maximum line length counts for the given iterator
 /// over a set of bytes. A word is a non-zero-length sequence of characters delimited by white
 /// space.
-fn count<I>(bytes: I) -> Count
+fn count<I>(bytes: I) -> io::Result<Count>
     where I: Iterator<Item=io::Result<u8>>
 {
     enum State {
@@ -26,7 +26,7 @@ fn count<I>(bytes: I) -> Count
     for c in bytes {
         count.bytes += 1;
         count.chars += 1; // XXX what is a char?
-        let c = c.unwrap() as char;
+        let c = try!(c) as char;
         match c {
             '\n' => {
                 count.newlines += 1;
@@ -47,7 +47,7 @@ fn count<I>(bytes: I) -> Count
 
     }
 
-    count
+    Ok(count)
 }
 
 fn main() {
@@ -87,8 +87,13 @@ fn main() {
     }
 
     let reader = BufReader::new(file);
-    let count = count(reader.bytes());
-
+    let count = match count(reader.bytes()) {
+        Ok(count) => count,
+        Err(e) => {
+            println!("error reading file: {:?}", e);
+            process::exit(1);
+        }
+    };
 
     // XXX the formatting is such that each field takes up the space of the longest output field
     println!("{} {} {} {} {} {:?}", count.newlines, count.words, count.chars, count.bytes, count.max_line_length, path);
