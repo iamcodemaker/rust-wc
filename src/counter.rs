@@ -60,7 +60,6 @@ impl Count {
                 State::Word if c.is_whitespace() => State::Whitespace,
                 state => state
             }
-
         }
 
         Ok(count)
