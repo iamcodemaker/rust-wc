@@ -1,7 +1,7 @@
 use std::io;
 use std::cmp::max;
-use std::str::from_utf8;
 use std::error::Error;
+use utf8buf::Utf8Buf;
 
 pub struct Count {
     pub newlines: u32,
@@ -35,8 +35,7 @@ impl Count {
 
         let mut count = Count::new();
         let mut current_line_length = 0;
-        let mut c_unicode = [0u8; 4];
-        let mut unicode_bytes = 0;
+        let mut utf8buf = Utf8Buf::new();
 
         let mut state = State::Whitespace;
         for c in bytes {
@@ -62,15 +61,15 @@ impl Count {
                 state => state
             };
 
-            c_unicode[unicode_bytes] = c_byte;
-            unicode_bytes += 1;
-            match from_utf8(&c_unicode[..unicode_bytes]) {
+            utf8buf.push(c_byte);
+            match utf8buf.to_str() {
                 Ok(_) => {
                     count.chars += 1;
-                    c_unicode = [0u8; 4];
-                    unicode_bytes = 0;
+                    utf8buf.clear();
                 }
-                Err(e) if unicode_bytes == 4 => return Err(::std::convert::From::from(e)),
+                // buffer is full yet we stil don't have a valid char
+                Err(e) if utf8buf.is_full() => return Err(::std::convert::From::from(e)),
+                // no valid char but buffer is not yet full
                 _ => {}
             }
         }
