@@ -1,5 +1,7 @@
 use std::io;
 use std::cmp::max;
+use std::str::from_utf8;
+use std::error::Error;
 
 pub struct Count {
     pub newlines: u32,
@@ -23,7 +25,7 @@ impl Count {
     /// Generate newline, word, character, byte, and maximum line length counts for the given
     /// iterator over a set of bytes. A word is a non-zero-length sequence of characters delimited
     /// by white space.
-    pub fn count<I>(bytes: I) -> io::Result<Count>
+    pub fn count<I>(bytes: I) -> Result<Count, Box<Error>>
         where I: Iterator<Item=io::Result<u8>>
     {
         enum State {
@@ -33,16 +35,15 @@ impl Count {
 
         let mut count = Count::new();
         let mut current_line_length = 0;
+        let mut c_unicode = [0u8; 4];
+        let mut unicode_bytes = 0;
 
         let mut state = State::Whitespace;
         for c in bytes {
+            let c_byte = try!(c);
             count.bytes += 1;
-            // XXX what is a char? Keep a buffer that is 4 bytes long and use std::char::from_u32
-            // to count characters. According to the internet, this is for counting unicode
-            // characters.
-            count.chars += 1;
 
-            let c = try!(c) as char;
+            let c = c_byte as char;
             if c == '\n' {
                 count.newlines += 1;
                 current_line_length = 0;
@@ -59,6 +60,18 @@ impl Count {
                 }
                 State::Word if c.is_whitespace() => State::Whitespace,
                 state => state
+            };
+
+            c_unicode[unicode_bytes] = c_byte;
+            unicode_bytes += 1;
+            match from_utf8(&c_unicode[..unicode_bytes]) {
+                Ok(_) => {
+                    count.chars += 1;
+                    c_unicode = [0u8; 4];
+                    unicode_bytes = 0;
+                }
+                Err(e) if unicode_bytes == 4 => return Err(::std::convert::From::from(e)),
+                _ => {}
             }
         }
 
@@ -120,4 +133,15 @@ And a short line to end it.
         assert_eq!(count.newlines, 6);
         assert_eq!(count.max_line, 292);
     }
+
+    #[test]
+    fn unicode() {
+        let count = Count::count(vec_from_string("இঈஇ 💖\n").into_iter()).unwrap();
+        assert_eq!(count.newlines, 1);
+        assert_eq!(count.words, 2);
+        assert_eq!(count.bytes, 15);
+        assert_eq!(count.chars, 6);
+        assert_eq!(count.max_line, 14);
+    }
+
 }
