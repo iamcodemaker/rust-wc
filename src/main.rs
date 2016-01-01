@@ -7,13 +7,25 @@ use std::fs::File;
 extern crate rust_wc;
 use rust_wc::counter::Count;
 
+extern crate getopts;
+use getopts::Options;
+
 fn main() {
-    if env::args().count() != 2 {
+    let opts = Options::new();
+    let matches = match opts.parse(env::args().skip(1)) {
+        Ok(m) => m,
+        Err(e) => {
+            println!("invalid arguments: {}", e);
+            process::exit(1);
+        }
+    };
+
+    if matches.free.len() != 1 {
         println!("error: invalid arguments");
         process::exit(1);
     }
 
-    let path = env::args().nth(1).unwrap();
+    let path = &matches.free[0];
     let path = Path::new(&path);
 
     let file = match File::open(&path) {
