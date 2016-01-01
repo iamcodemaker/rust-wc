@@ -1,4 +1,3 @@
-use std::env;
 use std::process;
 use std::path::Path;
 use std::io::BufReader;
@@ -6,27 +5,18 @@ use std::io::prelude::*;
 use std::fs::File;
 extern crate rust_wc;
 use rust_wc::counter::Count;
-
-extern crate getopts;
-use getopts::Options;
+use rust_wc::options::Options;
 
 fn main() {
     let opts = Options::new();
-    let matches = match opts.parse(env::args().skip(1)) {
-        Ok(m) => m,
-        Err(e) => {
-            println!("invalid arguments: {}", e);
-            process::exit(1);
-        }
-    };
 
-    if matches.free.len() != 1 {
+    if opts.files().count() != 1 {
         println!("error: invalid arguments");
         process::exit(1);
     }
 
-    let path = &matches.free[0];
-    let path = Path::new(&path);
+    let path = opts.files().nth(0).unwrap();
+    let path = Path::new(path);
 
     let file = match File::open(&path) {
         Ok(f) => f,
