@@ -16,8 +16,10 @@ fn main() {
     }
 
     let path = opts.files().nth(0).unwrap();
-    let path = Path::new(path);
+    process_file(Path::new(path));
+}
 
+fn process_file(path: &Path) {
     let file = match File::open(&path) {
         Ok(f) => f,
         Err(e) => {
