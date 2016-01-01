@@ -9,7 +9,13 @@ use rust_wc::counter::Count;
 use rust_wc::options::Options;
 
 fn main() {
-    let opts = Options::new();
+    let opts = match Options::new() {
+        Ok(opts) => opts,
+        Err(e) => {
+            println!("invalid arguments: {}", e);
+            process::exit(1);
+        }
+    };
 
     if opts.files().count() != 1 {
         println!("error: invalid arguments");
