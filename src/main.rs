@@ -3,6 +3,7 @@ use std::path::Path;
 use std::io::BufReader;
 use std::io::prelude::*;
 use std::fs::File;
+use std::error::Error;
 extern crate rust_wc;
 use rust_wc::counter::Count;
 use rust_wc::options::Options;
@@ -16,25 +17,18 @@ fn main() {
     }
 
     let path = opts.files().nth(0).unwrap();
-    process_file(Path::new(path));
+    match process_file(Path::new(path)) {
+        Ok(_) => {}
+        Err(e) => {
+            println!("error processing file: {}", e);
+            process::exit(1);
+        }
+    }
 }
 
-fn process_file(path: &Path) {
-    let file = match File::open(&path) {
-        Ok(f) => f,
-        Err(e) => {
-            println!("error opening file: {}", e);
-            process::exit(1);
-        }
-    };
-
-    let metadata = match file.metadata() {
-        Ok(m) => m,
-        Err(e) => {
-            println!("error reading file metadata: {}", e);
-            process::exit(1);
-        }
-    };
+fn process_file(path: &Path) -> Result<(), Box<Error>> {
+    let file = try!(File::open(&path));
+    let metadata = try!(file.metadata());
 
     // XXX we don't need this, reader.bytes() will detect the error when we attempt to read the
     // file and result in error code 21
@@ -44,14 +38,9 @@ fn process_file(path: &Path) {
     }
 
     let reader = BufReader::new(file);
-    let count = match Count::count(reader.bytes()) {
-        Ok(count) => count,
-        Err(e) => {
-            println!("error reading file: {}", e);
-            process::exit(1);
-        }
-    };
+    let count = try!(Count::count(reader.bytes()));
 
     // XXX the formatting is such that each field takes up the space of the longest output field
     println!("{} {} {} {} {} {}", count.newlines, count.words, count.chars, count.bytes, count.max_line, path.display());
+    Ok(())
 }
