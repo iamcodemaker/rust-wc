@@ -17,16 +17,20 @@ fn main() {
     }
 
     let path = opts.files().nth(0).unwrap();
-    match process_file(Path::new(path)) {
-        Ok(_) => {}
+    let path = Path::new(path);
+    let count = match process_file(path) {
+        Ok(count) => count,
         Err(e) => {
             println!("error processing file: {}", e);
             process::exit(1);
         }
-    }
+    };
+
+    // XXX the formatting is such that each field takes up the space of the longest output field
+    println!("{} {} {} {} {} {}", count.newlines, count.words, count.chars, count.bytes, count.max_line, path.display());
 }
 
-fn process_file(path: &Path) -> Result<(), Box<Error>> {
+fn process_file(path: &Path) -> Result<Count, Box<Error>> {
     let file = try!(File::open(&path));
     let metadata = try!(file.metadata());
 
@@ -39,8 +43,5 @@ fn process_file(path: &Path) -> Result<(), Box<Error>> {
 
     let reader = BufReader::new(file);
     let count = try!(Count::count(reader.bytes()));
-
-    // XXX the formatting is such that each field takes up the space of the longest output field
-    println!("{} {} {} {} {} {}", count.newlines, count.words, count.chars, count.bytes, count.max_line, path.display());
-    Ok(())
+    Ok(count)
 }
