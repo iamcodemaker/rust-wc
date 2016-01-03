@@ -47,10 +47,10 @@ impl Options {
         where I: Iterator,
         I::Item: AsRef<OsStr>,
     {
-        let opts = Self::options();
+        let options = Self::options();
 
         // we do skip(1) here because the first argument is the program name
-        let matches = try!(opts.parse(args.skip(1)));
+        let matches = try!(options.parse(args.skip(1)));
 
         let mut opts = Options {
             bytes: matches.opt_present("c"),
