@@ -2,12 +2,19 @@ extern crate getopts;
 use std::env;
 use std::result;
 use std::ffi::OsStr;
+use std::io;
+use std::io::prelude::*;
+use std::fs::File;
+use std::string;
 
 #[derive(Debug)]
 pub enum Error {
     Usage,
     Version,
+    Files0FromWithFiles,
     Getopts(getopts::Fail),
+    Io(io::Error),
+    Utf8(string::FromUtf8Error),
 }
 
 use std::fmt;
@@ -16,7 +23,10 @@ impl fmt::Display for Error {
         match *self {
             Error::Usage => write!(f, "{}", Options::usage()),
             Error::Version => write!(f, "{}", Options::version()),
+            Error::Files0FromWithFiles => write!(f, "invalid arguments: can't use --files0-from with a FILEs list"),
             Error::Getopts(ref e) => write!(f, "invalid arguments: {}", e),
+            Error::Io(ref e) => write!(f, "error reading file list: {}", e),
+            Error::Utf8(ref e) => write!(f, "error reading file list, invalid utf8: {}", e),
         }
     }
 }
@@ -25,6 +35,18 @@ use std::convert::From;
 impl From<getopts::Fail> for Error {
     fn from(e: getopts::Fail) -> Error {
         Error::Getopts(e)
+    }
+}
+
+impl From<io::Error> for Error {
+    fn from(e: io::Error) -> Error {
+        Error::Io(e)
+    }
+}
+
+impl From<string::FromUtf8Error> for Error {
+    fn from(e: string::FromUtf8Error) -> Error {
+        Error::Utf8(e)
     }
 }
 
@@ -89,6 +111,7 @@ longest line. Counts are separated by whitespace followed by the file name."
         opts.optflag("l", "lines", "print the newline counts");
         opts.optflag("L", "max-line-length", "print the length of the longest line");
         opts.optflag("w", "words", "print the word counts");
+        opts.optopt("", "files0-from", "read input file list from the specified file containing a NUL-terminated list of file names; use - to read from stdin", "F");
         opts.optflag("h", "help", "display this help text and exit");
         opts.optflag("v", "version", "output version information and exit");
         opts
@@ -109,13 +132,24 @@ longest line. Counts are separated by whitespace followed by the file name."
             return Err(Error::Version);
         }
 
+        let files0_from = match  matches.opt_str("files0-from") {
+            Some(files0_from) => {
+                if !matches.free.is_empty() {
+                    // using --files0-from with FILEs is not allowed
+                    return Err(Error::Files0FromWithFiles);
+                }
+                Some(try!(load_files_from(&files0_from)))
+            }
+            None => None,
+        };
+
         let mut opts = Options {
             bytes: matches.opt_present("c"),
             chars: matches.opt_present("m"),
             lines: matches.opt_present("l"),
             max_line: matches.opt_present("L"),
             words: matches.opt_present("w"),
-            files: matches.free,
+            files: files0_from.unwrap_or(matches.free),
         };
 
         // if no options are provided, set some defaults
@@ -129,9 +163,50 @@ longest line. Counts are separated by whitespace followed by the file name."
     }
 }
 
+fn load_files_from(file: &str) -> result::Result<Vec<String>, Error> {
+    if file == "-" {
+        load_files_from_stdin()
+    }
+    else {
+        let file = try!(File::open(file));
+        let reader = io::BufReader::new(file);
+        load_files_from_iter(reader.bytes())
+    }
+}
+
+fn load_files_from_stdin() -> result::Result<Vec<String>, Error> {
+    load_files_from_iter(io::stdin().bytes())
+}
+
+fn load_files_from_iter<I>(bytes: I) -> result::Result<Vec<String>, Error>
+   where I: Iterator<Item=io::Result<u8>>
+{
+    let mut vec = Vec::new();
+    let mut vec_string = Vec::new();
+    for b in bytes {
+        match try!(b) {
+            0 => {
+                vec.push(try!(String::from_utf8(vec_string.clone())));
+                vec_string.clear();
+            }
+            b => vec_string.push(b),
+        }
+    }
+
+    // add the final string, in case it wasn't null terminated
+    if vec.is_empty() || !vec_string.is_empty() {
+        vec.push(try!(String::from_utf8(vec_string)));
+    }
+
+    Ok(vec)
+}
+
 #[cfg(test)]
 mod tests {
     use super::Options;
+    use super::Error;
+    use super::load_files_from_iter;
+    use std::io;
 
     #[test]
     fn defaults() {
@@ -164,5 +239,53 @@ mod tests {
             assert!(!opts.chars);
             assert!(!opts.max_line);
         }
+    }
+
+    #[test]
+    fn files0_from_with_files() {
+        let args = vec!["test", "--files0-from", "file", "other-file"];
+        match Options::from_iter(args.iter()) {
+            Err(Error::Files0FromWithFiles) => {} // do nothing, this error is expected
+            Ok(_) => panic!("did not expect this to succeed"),
+            Err(e) => panic!("did not expect error {}", e),
+        }
+    }
+
+    fn vec_from_string(s: &str) -> Vec<io::Result<u8>> {
+        s.bytes()
+            .map(|c| Ok(c))
+            .collect()
+    }
+
+    #[test]
+    fn files0_from_no_null_term() {
+        let vec = load_files_from_iter(vec_from_string("a\0b\0c").into_iter()).unwrap();
+        assert_eq!(vec.len(), 3);
+        assert_eq!(vec[0], "a");
+        assert_eq!(vec[1], "b");
+        assert_eq!(vec[2], "c");
+    }
+
+    #[test]
+    fn files0_from_one_item() {
+        let vec = load_files_from_iter(vec_from_string("one").into_iter()).unwrap();
+        assert_eq!(vec.len(), 1);
+        assert_eq!(vec[0], "one");
+    }
+
+    #[test]
+    fn files0_from_null_term() {
+        let vec = load_files_from_iter(vec_from_string("a\0b\0c\0").into_iter()).unwrap();
+        assert_eq!(vec.len(), 3);
+        assert_eq!(vec[0], "a");
+        assert_eq!(vec[1], "b");
+        assert_eq!(vec[2], "c");
+    }
+
+    #[test]
+    fn files0_from_empty() {
+        let vec = load_files_from_iter(vec_from_string("").into_iter()).unwrap();
+        assert_eq!(vec.len(), 1);
+        assert_eq!(vec[0], "");
     }
 }
