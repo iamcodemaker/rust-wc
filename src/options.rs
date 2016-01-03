@@ -33,17 +33,21 @@ impl Options {
         Self::from_iter(vec!["test"].iter())
     }
 
-
-    fn from_iter<I>(args: I) -> Result
-        where I: Iterator,
-        I::Item: AsRef<OsStr>,
-    {
+    fn options() -> getopts::Options {
         let mut opts = getopts::Options::new();
         opts.optflag("c", "bytes", "print the byte counts");
         opts.optflag("m", "chars", "print the character counts");
         opts.optflag("l", "lines", "print the newline counts");
         opts.optflag("L", "max-line-length", "print the length of the longest line");
         opts.optflag("w", "words", "print the word counts");
+        opts
+    }
+
+    fn from_iter<I>(args: I) -> Result
+        where I: Iterator,
+        I::Item: AsRef<OsStr>,
+    {
+        let opts = Self::options();
 
         // we do skip(1) here because the first argument is the program name
         let matches = try!(opts.parse(args.skip(1)));
