@@ -2,6 +2,8 @@ use std::io;
 use std::cmp::max;
 use std::error::Error;
 use utf8buf::Utf8Buf;
+use super::display::Display;
+use options::Options;
 
 pub struct Count {
     pub newlines: u32,
@@ -75,6 +77,10 @@ impl Count {
         }
 
         Ok(count)
+    }
+
+    pub fn display<'a>(&'a self, opts: &'a Options) -> Display {
+        Display::new(self, opts)
     }
 }
 

@@ -32,8 +32,7 @@ fn main() {
         }
     };
 
-    // XXX the formatting is such that each field takes up the space of the longest output field
-    println!("{} {} {} {} {} {}", count.newlines, count.words, count.chars, count.bytes, count.max_line, path.display());
+    println!("{} {}", count.display(&opts), path.display());
 }
 
 fn process_file(path: &Path) -> Result<Count, Box<Error>> {
