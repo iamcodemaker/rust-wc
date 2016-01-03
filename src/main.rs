@@ -29,16 +29,10 @@ fn main() {
 
     let mut total = Count::new();
     for file in opts.files() {
-        let path = Path::new(file);
-        match process_file(path) {
-            Err(e) => {
-                writeln!(stderr(), "{}: {}", path.display(), e).expect("error writing to stderr");
-                println!("{} {}", Count::new().display(&opts), path.display());
-            }
-            Ok(count) => {
-                println!("{} {}", count.display(&opts), path.display());
-                total = total + count;
-            }
+        let result = process_file(file);
+        print_count(&opts, file, &result);
+        if let Ok(count) = result {
+            total = total + count;
         }
     }
 
@@ -48,7 +42,20 @@ fn main() {
     }
 }
 
-fn process_file(path: &Path) -> Result<Count, Box<Error>> {
+fn print_count(opts: &Options, file: &str, count_result: &Result<Count, Box<Error>>) {
+    match *count_result {
+        Err(ref e) => {
+            writeln!(stderr(), "{}: {}", file, e).expect("error writing to stderr");
+            println!("{} {}", Count::new().display(&opts), file);
+        }
+        Ok(ref count) => {
+            println!("{} {}", count.display(&opts), file);
+        }
+    }
+}
+
+fn process_file(file: &str) -> Result<Count, Box<Error>> {
+    let path = Path::new(file);
     let file = try!(File::open(&path));
     let reader = BufReader::new(file);
     let count = try!(Count::count(reader.bytes()));
