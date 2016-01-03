@@ -14,7 +14,7 @@ pub struct Count {
 }
 
 impl Count {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Count {
             newlines: 0,
             words: 0,

@@ -19,29 +19,20 @@ fn main() {
 
     for file in opts.files() {
         let path = Path::new(file);
-        let count = match process_file(path) {
-            Ok(count) => count,
+        match process_file(path) {
             Err(e) => {
-                println!("error processing file: {}", e);
-                process::exit(1);
+                println!("{}: {}", path.display(), e);
+                println!("{} {}", Count::new().display(&opts), path.display());
             }
-        };
-
-        println!("{} {}", count.display(&opts), path.display());
+            Ok(count) => {
+                println!("{} {}", count.display(&opts), path.display());
+            }
+        }
     }
 }
 
 fn process_file(path: &Path) -> Result<Count, Box<Error>> {
     let file = try!(File::open(&path));
-    let metadata = try!(file.metadata());
-
-    // XXX we don't need this, reader.bytes() will detect the error when we attempt to read the
-    // file and result in error code 21
-    if metadata.is_dir() {
-        println!("{} is a directory", path.display());
-        process::exit(1);
-    }
-
     let reader = BufReader::new(file);
     let count = try!(Count::count(reader.bytes()));
     Ok(count)
