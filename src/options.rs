@@ -145,6 +145,7 @@ mod tests {
         assert!(opts.lines);
         assert!(opts.words);
         assert!(opts.bytes);
+        assert_eq!(opts.files().nth(0).unwrap(), "file");
     }
 
     #[test]
