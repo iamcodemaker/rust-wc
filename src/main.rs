@@ -1,5 +1,4 @@
 use std::process;
-use std::path::Path;
 use std::io::BufReader;
 use std::io::prelude::*;
 use std::io::{stderr, stdin};
@@ -63,8 +62,7 @@ fn process_file(file: &str) -> Result<Count, Box<Error>> {
         process_stdin()
     }
     else {
-        let path = Path::new(file);
-        let file = try!(File::open(&path));
+        let file = try!(File::open(file));
         let reader = BufReader::new(file);
         Count::count(reader.bytes())
     }
