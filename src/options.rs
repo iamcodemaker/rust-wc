@@ -68,7 +68,7 @@ impl Options {
     fn options() -> getopts::Options {
         let mut opts = getopts::Options::new();
         opts.optflag("c", "bytes", "print the byte counts");
-        opts.optflag("m", "chars", "print the character counts");
+        opts.optflag("m", "chars", "print unicode character counts");
         opts.optflag("l", "lines", "print the newline counts");
         opts.optflag("L", "max-line-length", "print the length of the longest line");
         opts.optflag("w", "words", "print the word counts");
