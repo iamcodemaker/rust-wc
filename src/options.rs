@@ -22,9 +22,17 @@ impl Options {
     }
 
     #[cfg(test)]
-    pub fn test() -> Result {
+    pub fn test_args(args: Vec<&str>) -> Result {
+        let mut a = vec!["test"];
+        a.extend(args.iter());
+        Self::from_iter(a.iter())
+    }
+
+    #[cfg(test)]
+    pub fn test_empty() -> Result {
         Self::from_iter(vec!["test"].iter())
     }
+
 
     fn from_iter<I>(args: I) -> Result
         where I: Iterator,
