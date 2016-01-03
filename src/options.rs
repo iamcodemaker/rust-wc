@@ -1,6 +1,5 @@
 extern crate getopts;
 use std::env;
-use std::slice::Iter;
 use std::result;
 use std::ffi::OsStr;
 
@@ -128,10 +127,6 @@ longest line. Counts are separated by whitespace followed by the file name."
 
         Ok(opts)
     }
-
-    pub fn files(&self) -> Iter<String> {
-        self.files.iter()
-    }
 }
 
 #[cfg(test)]
@@ -145,7 +140,7 @@ mod tests {
         assert!(opts.lines);
         assert!(opts.words);
         assert!(opts.bytes);
-        assert_eq!(opts.files().nth(0).unwrap(), "file");
+        assert_eq!(opts.files[0], "file");
     }
 
     #[test]

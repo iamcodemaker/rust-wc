@@ -27,7 +27,7 @@ fn main() {
     };
 
     let mut total = Count::new();
-    for file in opts.files() {
+    for file in opts.files.iter() {
         let result = process_file(file);
         print_count(&opts, file, &result);
         if let Ok(count) = result {
@@ -35,7 +35,7 @@ fn main() {
         }
     }
 
-    match opts.files().count() {
+    match opts.files.len() {
         // no files provided, read from stdin
         0 => print_count(&opts, "-", &process_stdin()),
         // print the total count if more than one file was provided

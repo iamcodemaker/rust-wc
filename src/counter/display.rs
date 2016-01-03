@@ -25,7 +25,7 @@ impl<'a> Display<'a> {
         }
 
         // for a single file scale the width
-        if self.opts.files().count() <= 1 {
+        if self.opts.files.len() <= 1 {
             // calculate the width of the longest field and scale the field with based on that. Use a
             // max field size of 7
             let mut digits = 0;
