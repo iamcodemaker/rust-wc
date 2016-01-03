@@ -58,6 +58,5 @@ fn process_file(file: &str) -> Result<Count, Box<Error>> {
     let path = Path::new(file);
     let file = try!(File::open(&path));
     let reader = BufReader::new(file);
-    let count = try!(Count::count(reader.bytes()));
-    Ok(count)
+    Count::count(reader.bytes())
 }
