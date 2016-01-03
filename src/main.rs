@@ -17,22 +17,18 @@ fn main() {
         }
     };
 
-    if opts.files().count() != 1 {
-        println!("error: invalid arguments");
-        process::exit(1);
+    for file in opts.files() {
+        let path = Path::new(file);
+        let count = match process_file(path) {
+            Ok(count) => count,
+            Err(e) => {
+                println!("error processing file: {}", e);
+                process::exit(1);
+            }
+        };
+
+        println!("{} {}", count.display(&opts), path.display());
     }
-
-    let path = opts.files().nth(0).unwrap();
-    let path = Path::new(path);
-    let count = match process_file(path) {
-        Ok(count) => count,
-        Err(e) => {
-            println!("error processing file: {}", e);
-            process::exit(1);
-        }
-    };
-
-    println!("{} {}", count.display(&opts), path.display());
 }
 
 fn process_file(path: &Path) -> Result<Count, Box<Error>> {
