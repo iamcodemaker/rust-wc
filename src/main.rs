@@ -16,6 +16,10 @@ fn main() {
             println!("{}", e);
             process::exit(0);
         }
+        Err(e @ options::Error::Version) => {
+            println!("{}", e);
+            process::exit(0);
+        }
         Err(e) => {
             println!("{}", e);
             process::exit(1);

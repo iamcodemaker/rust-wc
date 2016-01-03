@@ -7,6 +7,7 @@ use std::ffi::OsStr;
 #[derive(Debug)]
 pub enum Error {
     Usage,
+    Version,
     Getopts(getopts::Fail),
 }
 
@@ -15,6 +16,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Error::Usage => write!(f, "{}", Options::usage()),
+            Error::Version => write!(f, "{}", Options::version()),
             Error::Getopts(ref e) => write!(f, "invalid arguments: {}", e),
         }
     }
@@ -47,6 +49,10 @@ impl Options {
         Self::options().usage("")
     }
 
+    pub fn version() -> String {
+        env!("CARGO_PKG_VERSION").to_owned()
+    }
+
     #[cfg(test)]
     pub fn test_args(args: Vec<&str>) -> Result {
         let mut a = vec!["test"];
@@ -67,6 +73,7 @@ impl Options {
         opts.optflag("L", "max-line-length", "print the length of the longest line");
         opts.optflag("w", "words", "print the word counts");
         opts.optflag("h", "help", "display this help text and exit");
+        opts.optflag("v", "version", "output version information and exit");
         opts
     }
 
@@ -80,6 +87,9 @@ impl Options {
         let matches = try!(options.parse(args.skip(1)));
         if matches.opt_present("h") {
             return Err(Error::Usage);
+        }
+        if matches.opt_present("v") {
+            return Err(Error::Version);
         }
 
         let mut opts = Options {
