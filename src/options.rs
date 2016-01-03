@@ -45,8 +45,26 @@ impl Options {
         Self::from_iter(env::args_os())
     }
 
+    pub fn program_name() -> String {
+        env::args_os().nth(0)
+            .unwrap_or(::std::convert::From::from("rust-wc"))
+            .into_string()
+            .unwrap_or("rust-wc".to_owned())
+    }
+
     pub fn usage() -> String {
-        Self::options().usage("")
+        Self::options().usage(format!(
+r"usage: {} [OPTION]... [FILE]...
+
+Print newline, word, and byte counts for each FILE, and a total if more than
+one FILE is specified. If no FILEs are provide or if FILE is -, then read from
+stdin. A word is a sequence of characters delimited by white space. The
+characters count is a count of valid UTF-8 encoded unicode characters.
+
+Which counts are printed can be filtered using the options below. The counts
+are always printed in the follwoing order: newline, word, character, byte,
+longest line. Counts are separated by whitespace followed by the file name."
+, Self::program_name()).as_ref())
     }
 
     pub fn version() -> String {
