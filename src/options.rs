@@ -32,7 +32,7 @@ impl From<getopts::Fail> for Error {
 pub type Result = result::Result<Options, Error>;
 
 pub struct Options {
-    matches: getopts::Matches,
+    pub files: Vec<String>,
     pub bytes: bool,
     pub chars: bool,
     pub lines: bool,
@@ -116,7 +116,7 @@ longest line. Counts are separated by whitespace followed by the file name."
             lines: matches.opt_present("l"),
             max_line: matches.opt_present("L"),
             words: matches.opt_present("w"),
-            matches: matches,
+            files: matches.free,
         };
 
         // if no options are provided, set some defaults
@@ -130,7 +130,7 @@ longest line. Counts are separated by whitespace followed by the file name."
     }
 
     pub fn files(&self) -> Iter<String> {
-        self.matches.free.iter()
+        self.files.iter()
     }
 }
 
