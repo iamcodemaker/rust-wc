@@ -1,11 +1,33 @@
 extern crate getopts;
 use std::env;
 use std::slice::Iter;
-use std::error::Error;
 use std::result;
 use std::ffi::OsStr;
 
-pub type Result = result::Result<Options, Box<Error>>;
+#[derive(Debug)]
+pub enum Error {
+    Usage,
+    Getopts(getopts::Fail),
+}
+
+use std::fmt;
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Error::Usage => write!(f, "{}", Options::usage()),
+            Error::Getopts(ref e) => write!(f, "invalid arguments: {}", e),
+        }
+    }
+}
+
+use std::convert::From;
+impl From<getopts::Fail> for Error {
+    fn from(e: getopts::Fail) -> Error {
+        Error::Getopts(e)
+    }
+}
+
+pub type Result = result::Result<Options, Error>;
 
 pub struct Options {
     matches: getopts::Matches,
@@ -19,6 +41,10 @@ pub struct Options {
 impl Options {
     pub fn new() -> Result {
         Self::from_iter(env::args_os())
+    }
+
+    pub fn usage() -> String {
+        Self::options().usage("")
     }
 
     #[cfg(test)]
@@ -40,6 +66,7 @@ impl Options {
         opts.optflag("l", "lines", "print the newline counts");
         opts.optflag("L", "max-line-length", "print the length of the longest line");
         opts.optflag("w", "words", "print the word counts");
+        opts.optflag("h", "help", "display this help text and exit");
         opts
     }
 
@@ -51,6 +78,9 @@ impl Options {
 
         // we do skip(1) here because the first argument is the program name
         let matches = try!(options.parse(args.skip(1)));
+        if matches.opt_present("h") {
+            return Err(Error::Usage);
+        }
 
         let mut opts = Options {
             bytes: matches.opt_present("c"),

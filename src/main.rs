@@ -6,13 +6,18 @@ use std::fs::File;
 use std::error::Error;
 extern crate rust_wc;
 use rust_wc::counter::Count;
+use rust_wc::options;
 use rust_wc::options::Options;
 
 fn main() {
     let opts = match Options::new() {
         Ok(opts) => opts,
+        Err(e @ options::Error::Usage) => {
+            println!("{}", e);
+            process::exit(0);
+        }
         Err(e) => {
-            println!("invalid arguments: {}", e);
+            println!("{}", e);
             process::exit(1);
         }
     };
