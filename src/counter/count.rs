@@ -84,6 +84,20 @@ impl Count {
     }
 }
 
+use std::ops::Add;
+impl Add for Count {
+    type Output = Count;
+    fn add(self, rhs: Self) -> Self::Output {
+        Count {
+            newlines: self.newlines + rhs.newlines,
+            words: self.words + rhs.words,
+            bytes: self.bytes + rhs.bytes,
+            chars: self.chars + rhs.chars,
+            max_line: self.max_line + rhs.max_line,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::io;

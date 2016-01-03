@@ -17,6 +17,7 @@ fn main() {
         }
     };
 
+    let mut total = Count::new();
     for file in opts.files() {
         let path = Path::new(file);
         match process_file(path) {
@@ -26,8 +27,14 @@ fn main() {
             }
             Ok(count) => {
                 println!("{} {}", count.display(&opts), path.display());
+                total = total + count;
             }
         }
+    }
+
+    // print the total count if necessary
+    if opts.files().count() > 1 {
+        println!("{} total", total.display(&opts));
     }
 }
 
