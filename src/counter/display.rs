@@ -27,3 +27,30 @@ impl<'a> fmt::Display for Display<'a> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use options::Options;
+    use counter::Count;
+    use std::fmt::Write;
+
+    #[test]
+    fn everything() {
+        let mut s = String::new();
+        let mut count = Count::new();
+        count.newlines = 0;
+        count.words = 1;
+        count.chars = 2;
+        count.bytes = 3;
+        count.max_line = 4;
+
+        let mut opts = Options::test().unwrap();
+        opts.lines = true;
+        opts.words = true;
+        opts.chars = true;
+        opts.bytes = true;
+        opts.max_line = true;
+        write!(s, "{}", count.display(&opts)).unwrap();
+        assert_eq!(s, " 0 1 2 3 4");
+    }
+}

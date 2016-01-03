@@ -21,6 +21,11 @@ impl Options {
         Self::from_iter(env::args_os())
     }
 
+    #[cfg(test)]
+    pub fn test() -> Result {
+        Self::from_iter(vec!["test"].iter())
+    }
+
     fn from_iter<I>(args: I) -> Result
         where I: Iterator,
         I::Item: AsRef<OsStr>,
