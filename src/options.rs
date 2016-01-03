@@ -75,7 +75,9 @@ impl Options {
 
     pub fn usage() -> String {
         Self::options().usage(format!(
-r"usage: {} [OPTION]... [FILE]...
+r"usage:
+  {0} [OPTION]... [FILE]...
+  {0} [OPTION]... --files0-from F
 
 Print newline, word, and byte counts for each FILE, and a total if more than
 one FILE is specified. If no FILEs are provide or if FILE is -, then read from
