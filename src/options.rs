@@ -68,7 +68,7 @@ longest line. Counts are separated by whitespace followed by the file name."
     }
 
     pub fn version() -> String {
-        env!("CARGO_PKG_VERSION").to_owned()
+        format!("{} v{}", Self::program_name(), env!("CARGO_PKG_VERSION"))
     }
 
     #[cfg(test)]
