@@ -2,6 +2,7 @@ use std::process;
 use std::path::Path;
 use std::io::BufReader;
 use std::io::prelude::*;
+use std::io::stderr;
 use std::fs::File;
 use std::error::Error;
 extern crate rust_wc;
@@ -21,7 +22,7 @@ fn main() {
             process::exit(0);
         }
         Err(e) => {
-            println!("{}", e);
+            writeln!(stderr(), "{}", e).expect("error writing to stderr");
             process::exit(1);
         }
     };
@@ -31,7 +32,7 @@ fn main() {
         let path = Path::new(file);
         match process_file(path) {
             Err(e) => {
-                println!("{}: {}", path.display(), e);
+                writeln!(stderr(), "{}: {}", path.display(), e).expect("error writing to stderr");
                 println!("{} {}", Count::new().display(&opts), path.display());
             }
             Ok(count) => {
