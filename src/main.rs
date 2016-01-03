@@ -2,7 +2,7 @@ use std::process;
 use std::path::Path;
 use std::io::BufReader;
 use std::io::prelude::*;
-use std::io::stderr;
+use std::io::{stderr, stdin};
 use std::fs::File;
 use std::error::Error;
 extern crate rust_wc;
@@ -36,9 +36,13 @@ fn main() {
         }
     }
 
-    // print the total count if necessary
-    if opts.files().count() > 1 {
-        println!("{} total", total.display(&opts));
+    match opts.files().count() {
+        // no files provided, read from stdin
+        0 => print_count(&opts, "-", &process_stdin()),
+        // print the total count if more than one file was provided
+        c if c > 1 => println!("{} total", total.display(&opts)),
+        // else do nothing
+        _ => {}
     }
 }
 
@@ -55,8 +59,17 @@ fn print_count(opts: &Options, file: &str, count_result: &Result<Count, Box<Erro
 }
 
 fn process_file(file: &str) -> Result<Count, Box<Error>> {
-    let path = Path::new(file);
-    let file = try!(File::open(&path));
-    let reader = BufReader::new(file);
-    Count::count(reader.bytes())
+    if file == "-" {
+        process_stdin()
+    }
+    else {
+        let path = Path::new(file);
+        let file = try!(File::open(&path));
+        let reader = BufReader::new(file);
+        Count::count(reader.bytes())
+    }
+}
+
+fn process_stdin() -> Result<Count, Box<Error>> {
+    Count::count(stdin().bytes())
 }
