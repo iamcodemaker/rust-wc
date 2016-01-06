@@ -75,7 +75,7 @@ impl Options {
 
     pub fn usage() -> String {
         Self::options().usage(format!(
-r"usage:
+r"Usage:
   {0} [OPTION]... [FILE]...
   {0} [OPTION]... --files0-from F
 
