@@ -1,7 +1,8 @@
 use std::process;
 use std::io::BufReader;
 use std::io::prelude::*;
-use std::io::{stderr, stdin};
+use std::io::BufWriter;
+use std::io::{stderr, stdin, stdout};
 use std::fs::File;
 use std::error::Error;
 extern crate rust_wc;
@@ -26,10 +27,14 @@ fn main() {
         }
     };
 
+    let stdout = stdout();
+    let stdout_lock = stdout.lock();
+    let mut out = BufWriter::new(stdout_lock);
+
     let mut total = Count::new();
     for file in opts.files.iter() {
         let result = process_file(file);
-        print_count(&opts, file, &result);
+        print_count(&mut out, &opts, file, &result);
         if let Ok(count) = result {
             total = total + count;
         }
@@ -37,22 +42,22 @@ fn main() {
 
     match opts.files.len() {
         // no files provided, read from stdin
-        0 => print_count(&opts, "-", &process_stdin()),
+        0 => print_count(&mut out, &opts, "-", &process_stdin()),
         // print the total count if more than one file was provided
-        c if c > 1 => println!("{} total", total.display(&opts)),
+        c if c > 1 => { writeln!(out, "{} total", total.display(&opts)).unwrap(); }
         // else do nothing
         _ => {}
     }
 }
 
-fn print_count(opts: &Options, file: &str, count_result: &Result<Count, Box<Error>>) {
+fn print_count(out: &mut Write, opts: &Options, file: &str, count_result: &Result<Count, Box<Error>>) {
     match *count_result {
         Err(ref e) => {
             writeln!(stderr(), "{}: {}", file, e).expect("error writing to stderr");
-            println!("{} {}", Count::new().display(&opts), file);
+            writeln!(*out, "{} {}", Count::new().display(&opts), file).unwrap();
         }
         Ok(ref count) => {
-            println!("{} {}", count.display(&opts), file);
+            writeln!(*out, "{} {}", count.display(&opts), file).unwrap();
         }
     }
 }
