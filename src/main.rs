@@ -53,6 +53,7 @@ fn main() {
 fn print_count(out: &mut Write, opts: &Options, file: &str, count_result: &Result<Count, Box<Error>>) {
     match *count_result {
         Err(ref e) => {
+            out.flush().unwrap();
             writeln!(stderr(), "{}: {}", file, e).expect("error writing to stderr");
             writeln!(*out, "{} {}", Count::new().display(&opts), file).unwrap();
         }
