@@ -1,7 +1,6 @@
 use std::io;
 use std::cmp::max;
 use std::error::Error;
-use utf8buf::Utf8Buf;
 use super::display::Display;
 use options::Options;
 
@@ -37,7 +36,6 @@ impl Count {
 
         let mut count = Count::new();
         let mut current_line_length = 0;
-        let mut utf8buf = Utf8Buf::new();
 
         let mut state = State::Whitespace;
         for c in bytes {
@@ -63,16 +61,13 @@ impl Count {
                 state => state
             };
 
-            utf8buf.push(c_byte);
-            match utf8buf.to_str() {
-                Ok(_) => {
-                    count.chars += 1;
-                    utf8buf.clear();
-                }
-                // buffer is full yet we stil don't have a valid char
-                Err(e) if utf8buf.is_full() => return Err(::std::convert::From::from(e)),
-                // no valid char but buffer is not yet full
-                _ => {}
+            // count utf8 single bytes and leading bytes, ignore continuation bytes
+            if c_byte & 0b1100_0000 == 0b1000_0000 {
+                // utf8 continuation byte, ignore it
+            }
+            else {
+                // utf8 sigle byte or leading byte, count it
+                count.chars += 1;
             }
         }
 
