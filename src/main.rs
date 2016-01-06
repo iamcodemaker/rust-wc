@@ -62,10 +62,6 @@ fn print_count(out: &mut Write, opts: &Options, file: &str, count_result: &Resul
 }
 
 fn process_file(file: &str) -> Result<Count, Box<Error>> {
-    if file == "-" {
-        Count::from_stdin()
-    }
-    else {
-        Count::from_file(file)
-    }
+    if file == "-" { Count::from_stdin() }
+    else { Count::from_file(file) }
 }
