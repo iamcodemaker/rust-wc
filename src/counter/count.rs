@@ -33,7 +33,11 @@ impl Count {
     }
 
     pub fn from_stdin() -> Result<Count, Box<Error>> {
-        Count::from_iter(stdin().bytes())
+        let stdin = stdin();
+        let stdin = stdin.lock();
+        let stdin = BufReader::new(stdin);
+        let stdin = stdin.bytes();
+        Count::from_iter(stdin)
     }
 
     /// Generate newline, word, character, byte, and maximum line length counts for the given
