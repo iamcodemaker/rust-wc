@@ -1,4 +1,7 @@
 use std::io;
+use std::io::prelude::*;
+use std::io::{stdin, BufReader};
+use std::fs::File;
 use std::cmp::max;
 use std::error::Error;
 use super::display::Display;
@@ -23,10 +26,20 @@ impl Count {
         }
     }
 
+    pub fn from_file(file: &str) -> Result<Count, Box<Error>> {
+        let file = try!(File::open(file));
+        let reader = BufReader::new(file);
+        Count::from_iter(reader.bytes())
+    }
+
+    pub fn from_stdin() -> Result<Count, Box<Error>> {
+        Count::from_iter(stdin().bytes())
+    }
+
     /// Generate newline, word, character, byte, and maximum line length counts for the given
     /// iterator over a set of bytes. A word is a non-zero-length sequence of characters delimited
     /// by white space.
-    pub fn count<I>(bytes: I) -> Result<Count, Box<Error>>
+    pub fn from_iter<I>(bytes: I) -> Result<Count, Box<Error>>
         where I: Iterator<Item=io::Result<u8>>
     {
         enum State {
@@ -106,7 +119,7 @@ mod tests {
 
     #[test]
     fn one_word() {
-        let count = Count::count(vec_from_string("word\n").into_iter()).unwrap();
+        let count = Count::from_iter(vec_from_string("word\n").into_iter()).unwrap();
         assert_eq!(count.newlines, 1);
         assert_eq!(count.words, 1);
         assert_eq!(count.bytes, 5);
@@ -116,7 +129,7 @@ mod tests {
 
     #[test]
     fn one_word_no_newline() {
-        let count = Count::count(vec_from_string("word").into_iter()).unwrap();
+        let count = Count::from_iter(vec_from_string("word").into_iter()).unwrap();
         assert_eq!(count.newlines, 0);
         assert_eq!(count.words, 1);
         assert_eq!(count.bytes, 4);
@@ -126,7 +139,7 @@ mod tests {
 
     #[test]
     fn words_and_whitespace() {
-        let count = Count::count(vec_from_string("   words and  \t\n  whitespace\n").into_iter()).unwrap();
+        let count = Count::from_iter(vec_from_string("   words and  \t\n  whitespace\n").into_iter()).unwrap();
         assert_eq!(count.newlines, 2);
         assert_eq!(count.words, 3);
         assert_eq!(count.bytes, 29);
@@ -136,7 +149,7 @@ mod tests {
 
     #[test]
     fn line_length() {
-        let count = Count::count(vec_from_string(
+        let count = Count::from_iter(vec_from_string(
 r"Testing out some long lines to see if it picks the largest one correctly.
 That last line was fairly long, but I think we can do better.
 Apparentlly not.
@@ -150,7 +163,7 @@ And a short line to end it.
 
     #[test]
     fn unicode() {
-        let count = Count::count(vec_from_string("இঈஇ 💖\n").into_iter()).unwrap();
+        let count = Count::from_iter(vec_from_string("இঈஇ 💖\n").into_iter()).unwrap();
         assert_eq!(count.newlines, 1);
         assert_eq!(count.words, 2);
         assert_eq!(count.bytes, 15);
