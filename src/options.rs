@@ -163,6 +163,13 @@ longest line. Counts are separated by whitespace followed by the file name."
 
         Ok(opts)
     }
+
+    /// Return `true` if only the bytes option is set.
+    ///
+    /// If bytes is the only option, additional optimizations can be set.
+    pub fn only_bytes(&self) -> bool {
+        self.bytes && !(self.chars || self.lines || self.max_line || self.words)
+    }
 }
 
 fn load_files_from(file: &str) -> result::Result<Vec<String>, Error> {
@@ -230,6 +237,7 @@ mod tests {
             assert!(!opts.words);
             assert!(!opts.chars);
             assert!(!opts.max_line);
+            assert!(opts.only_bytes());
         }
 
         {
@@ -240,6 +248,7 @@ mod tests {
             assert!(!opts.words);
             assert!(!opts.chars);
             assert!(!opts.max_line);
+            assert!(opts.only_bytes());
         }
     }
 
