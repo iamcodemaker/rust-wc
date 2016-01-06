@@ -8,11 +8,11 @@ use super::display::Display;
 use options::Options;
 
 pub struct Count {
-    pub newlines: u32,
-    pub words: u32,
-    pub bytes: u32,
-    pub chars: u32,
-    pub max_line: u32,
+    pub newlines: u64,
+    pub words: u64,
+    pub bytes: u64,
+    pub chars: u64,
+    pub max_line: u64,
 }
 
 impl Count {

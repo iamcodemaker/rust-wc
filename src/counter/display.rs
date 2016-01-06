@@ -19,7 +19,7 @@ impl<'a> Display<'a> {
         use std::cmp::min;
         use std::cmp::max;
 
-        fn digit_count(num: u32) -> usize {
+        fn digit_count(num: u64) -> usize {
             if num > 0 { ((num as f64).log10() + 1f64) as usize }
             else { 1 }
         }
