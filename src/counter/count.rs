@@ -7,6 +7,8 @@ use std::error::Error;
 use super::display::Display;
 use options::Options;
 use std::mem;
+extern crate memmap;
+use self::memmap::{Mmap, Protection};
 
 pub struct Count {
     pub newlines: u64,
@@ -29,13 +31,8 @@ impl Count {
 
     /// Return a Count with only the number of bytes in the given file.
     pub fn bytes_from_file(file: &str) -> Result<Count, Box<Error>> {
-        // read a single byte from the file to detect errors
-        let mut buf = [0u8; 1];
-        let mut file = try!(File::open(file));
-        try!(file.read(&mut buf));
-
         let mut count = Self::new();
-        count.bytes = try!(file.metadata()).len();
+        count.bytes = try!(Mmap::open_path(file, Protection::Read)).len() as u64;
         Ok(count)
     }
 
@@ -69,9 +66,9 @@ impl Count {
 
 
     pub fn from_file(file: &str) -> Result<Count, Box<Error>> {
-        let file = try!(File::open(file));
-        let reader = BufReader::new(file);
-        Count::from_iter(reader.bytes())
+        let file = try!(Mmap::open_path(file, Protection::Read));
+        let bytes = unsafe { file.as_slice() };
+        Count::from_iter(bytes.iter().map(|b| Ok(*b)))
     }
 
     pub fn from_stdin() -> Result<Count, Box<Error>> {
