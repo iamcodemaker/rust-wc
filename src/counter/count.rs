@@ -55,7 +55,7 @@ impl Count {
     /// Generate newline, word, character, byte, and maximum line length counts for the given
     /// iterator over a set of bytes. A word is a non-zero-length sequence of characters delimited
     /// by white space.
-    pub fn from_iter<I>(bytes: I) -> Result<Count, Box<Error>>
+    fn from_iter<I>(bytes: I) -> Result<Count, Box<Error>>
         where I: Iterator<Item=io::Result<u8>>
     {
         enum State {
