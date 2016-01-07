@@ -6,6 +6,7 @@ use std::cmp::max;
 use std::error::Error;
 use super::display::Display;
 use options::Options;
+use std::mem;
 
 pub struct Count {
     pub newlines: u64,
@@ -37,6 +38,35 @@ impl Count {
         count.bytes = try!(file.metadata()).len();
         Ok(count)
     }
+
+    /// Return a Count with the number of lines and bytes in the given file.
+    pub fn lines_from_file(file: &str) -> Result<Count, Box<Error>> {
+        let file = try!(File::open(file));
+
+        let mut count = Self::new();
+        count.bytes = try!(file.metadata()).len();
+
+        let mut file = BufReader::new(file);
+        loop {
+            let mut buf = [0u8; 8]; // size of u64
+            if try!(file.read(&mut buf)) == 0 {
+                break;
+            }
+
+            // AND the entire 8 byte buffer with a mask of \n bytes to see if there are any
+            // newlines in the buffer. If there are we search for them, if not, we skip the search
+            // all together.
+            let has_newlines = unsafe { 0x0a0a0a0a0a0a0a0a & mem::transmute::<_, u64>(buf) };
+            if has_newlines != 0 {
+                for b in &buf {
+                    if *b == 0x0a { count.newlines += 1; }
+                }
+            }
+        }
+
+        Ok(count)
+    }
+
 
     pub fn from_file(file: &str) -> Result<Count, Box<Error>> {
         let file = try!(File::open(file));
