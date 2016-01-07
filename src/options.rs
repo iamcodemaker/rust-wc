@@ -166,7 +166,7 @@ longest line. Counts are separated by whitespace followed by the file name."
 
     /// Return `true` if only the bytes option is set.
     ///
-    /// If bytes is the only option, additional optimizations can be set.
+    /// If bytes is the only option, additional optimizations can be done.
     pub fn only_bytes(&self) -> bool {
         self.bytes && !(self.chars || self.lines || self.max_line || self.words)
     }
