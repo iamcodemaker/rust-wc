@@ -91,7 +91,11 @@ longest line. Counts are separated by whitespace followed by the file name."
     }
 
     pub fn version() -> String {
-        format!("{} v{}", Self::program_name(), env!("CARGO_PKG_VERSION"))
+        format!(
+r"{} v{}
+Copyright (c) 2016 Matthew Nicholson
+Ditributed under the MIT license: https://opensource.org/licenses/MIT"
+, Self::program_name(), env!("CARGO_PKG_VERSION"))
     }
 
     #[cfg(test)]
