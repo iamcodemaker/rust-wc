@@ -5,7 +5,7 @@ learn some Rust and play around with the language. I also wanted to see if my
 rust implementation could perform as good as or better than GNU wc.
 
 Usage
-=====
+-----
 ```
 Usage:
   rust-wc [OPTION]... [FILE]...
@@ -35,7 +35,7 @@ Options:
 ```
 
 Differences from GNU wc
-=======================
+-----------------------
 Rust-wc and GNU wc have the same command line interface and should behave the
 same given the same command line options. There are some slight differences
 with the whitespace in the output between the two programs. The error messages
@@ -44,7 +44,7 @@ between the two programs are also slightly different. GNU wc is faster for the
 everything else.
 
 Future Improvements
-===================
+-------------------
 There is an `mmap` branch that contains an implementation using mmap instead of
 standard file io that is even faster than the implementation in `master`.
 
