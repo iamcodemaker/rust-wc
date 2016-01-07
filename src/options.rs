@@ -170,6 +170,14 @@ longest line. Counts are separated by whitespace followed by the file name."
     pub fn only_bytes(&self) -> bool {
         self.bytes && !(self.chars || self.lines || self.max_line || self.words)
     }
+
+    /// Return `true` if only the lines option is set.
+    ///
+    /// If lines is the only option (optionally with the bytes option), additional optimizations
+    /// can be done.
+    pub fn only_lines(&self) -> bool {
+        self.lines && !(self.chars || self.max_line || self.words)
+    }
 }
 
 fn load_files_from(file: &str) -> result::Result<Vec<String>, Error> {
@@ -238,6 +246,7 @@ mod tests {
             assert!(!opts.chars);
             assert!(!opts.max_line);
             assert!(opts.only_bytes());
+            assert!(!opts.only_lines());
         }
 
         {
@@ -249,7 +258,47 @@ mod tests {
             assert!(!opts.chars);
             assert!(!opts.max_line);
             assert!(opts.only_bytes());
+            assert!(!opts.only_lines());
         }
+    }
+
+    #[test]
+    fn args_lines_short() {
+        let args = vec!["test", "-l"];
+        let opts = Options::from_iter(args.iter()).unwrap();
+        assert!(!opts.bytes);
+        assert!(opts.lines);
+        assert!(!opts.words);
+        assert!(!opts.chars);
+        assert!(!opts.max_line);
+        assert!(!opts.only_bytes());
+        assert!(opts.only_lines());
+    }
+
+    #[test]
+    fn args_lines_long() {
+        let args = vec!["test", "--lines"];
+        let opts = Options::from_iter(args.iter()).unwrap();
+        assert!(!opts.bytes);
+        assert!(opts.lines);
+        assert!(!opts.words);
+        assert!(!opts.chars);
+        assert!(!opts.max_line);
+        assert!(!opts.only_bytes());
+        assert!(opts.only_lines());
+    }
+
+    #[test]
+    fn args_lines_and_bytes_short() {
+        let args = vec!["test", "-lc"];
+        let opts = Options::from_iter(args.iter()).unwrap();
+        assert!(opts.bytes);
+        assert!(opts.lines);
+        assert!(!opts.words);
+        assert!(!opts.chars);
+        assert!(!opts.max_line);
+        assert!(!opts.only_bytes());
+        assert!(opts.only_lines());
     }
 
     #[test]
