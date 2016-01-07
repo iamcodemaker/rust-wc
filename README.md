@@ -2,7 +2,7 @@ A GNU wc clone in Rust
 ======================
 Rust-wc is a GNU wc clone written in rust. This project was a way for me to
 learn some Rust and play around with the language. I also wanted to see if my
-rust implementation could perform than GNU wc.
+rust implementation could perform as good as or better than GNU wc.
 
 Usage
 =====
@@ -40,9 +40,13 @@ Rust-wc and GNU wc have the same command line interface and should behave the
 same given the same command line options. There are some slight differences
 with the whitespace in the output between the two programs. The error messages
 between the two programs are also slightly different. GNU wc is faster for the
-`-c` (bytes) and `-l` (lines) options, rust-wc is faster for everything else.
+`-c` (bytes) and `-l` (lines) options, rust-wc is slightly faster for
+everything else.
 
 Future Improvements
 ===================
 There is an `mmap` branch that contains an implementation using mmap instead of
 standard file io that is even faster than the implementation in `master`.
+
+Presumably I could copy the same optimizations that GNU wc does and be about as
+fast, but I wanted to challenge myself so I didn't look at the GNU wc code.
