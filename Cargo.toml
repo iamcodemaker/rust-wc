@@ -6,3 +6,4 @@ authors = ["Matthew Nicholson <matt@matt-land.com>"]
 [dependencies]
 getopts = "0.2"
 memmap = "0.2"
+byteorder = "0.4"

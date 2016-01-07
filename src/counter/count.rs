@@ -1,7 +1,6 @@
 use std::io;
 use std::io::prelude::*;
 use std::io::{stdin, BufReader};
-use std::fs::File;
 use std::cmp::max;
 use std::error::Error;
 use super::display::Display;
@@ -9,6 +8,8 @@ use options::Options;
 use std::mem;
 extern crate memmap;
 use self::memmap::{Mmap, Protection};
+extern crate byteorder;
+use self::byteorder::{ByteOrder, LittleEndian};
 
 pub struct Count {
     pub newlines: u64,
@@ -38,24 +39,25 @@ impl Count {
 
     /// Return a Count with the number of lines and bytes in the given file.
     pub fn lines_from_file(file: &str) -> Result<Count, Box<Error>> {
-        let file = try!(File::open(file));
+        let file = try!(Mmap::open_path(file, Protection::Read));
 
         let mut count = Self::new();
-        count.bytes = try!(file.metadata()).len();
+        count.bytes = file.len() as u64;
 
-        let mut file = BufReader::new(file);
-        loop {
-            let mut buf = [0u8; 8]; // size of u64
-            if try!(file.read(&mut buf)) == 0 {
-                break;
-            }
-
+        let bytes = unsafe { file.as_slice() };
+        for buf in bytes.chunks(mem::size_of::<u64>()) {
             // AND the entire 8 byte buffer with a mask of \n bytes to see if there are any
             // newlines in the buffer. If there are we search for them, if not, we skip the search
             // all together.
-            let has_newlines = unsafe { 0x0a0a0a0a0a0a0a0a & mem::transmute::<_, u64>(buf) };
+            let has_newlines = if buf.len() == mem::size_of::<u64>() {
+                0x0a0a0a0a0a0a0a0a & LittleEndian::read_u64(buf)
+            }
+            else {
+                1
+            };
+
             if has_newlines != 0 {
-                for b in &buf {
+                for b in buf {
                     if *b == 0x0a { count.newlines += 1; }
                 }
             }
