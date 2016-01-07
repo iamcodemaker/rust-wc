@@ -31,7 +31,7 @@ fn main() {
 
     let mut total = Count::new();
     for file in opts.files.iter() {
-        let result = process_file(file);
+        let result = process_file(&opts, file);
         print_count(&mut out, &opts, file, &result);
         if let Ok(count) = result {
             total = total + count;
@@ -61,7 +61,8 @@ fn print_count(out: &mut Write, opts: &Options, file: &str, count_result: &Resul
     }
 }
 
-fn process_file(file: &str) -> Result<Count, Box<Error>> {
+fn process_file(opts: &Options, file: &str) -> Result<Count, Box<Error>> {
     if file == "-" { Count::from_stdin() }
+    else if opts.only_bytes() { Count::bytes_from_file(file) }
     else { Count::from_file(file) }
 }

@@ -26,6 +26,18 @@ impl Count {
         }
     }
 
+    /// Return a Count with only the number of bytes in the given file.
+    pub fn bytes_from_file(file: &str) -> Result<Count, Box<Error>> {
+        // read a single byte from the file to detect errors
+        let mut buf = [0u8; 1];
+        let mut file = try!(File::open(file));
+        try!(file.read(&mut buf));
+
+        let mut count = Self::new();
+        count.bytes = try!(file.metadata()).len();
+        Ok(count)
+    }
+
     pub fn from_file(file: &str) -> Result<Count, Box<Error>> {
         let file = try!(File::open(file));
         let reader = BufReader::new(file);
