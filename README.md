@@ -43,6 +43,9 @@ between the two programs are also slightly different. GNU wc is faster for the
 `-c` (bytes) and `-l` (lines) options, rust-wc is slightly faster for
 everything else.
 
+GNU wc is licenced under the GPLv3+ and rust-wc is licenced under the MIT
+license.
+
 Future Improvements
 -------------------
 There is an `mmap` branch that contains an implementation using mmap instead of
@@ -50,3 +53,7 @@ standard file io that is even faster than the implementation in `master`.
 
 Presumably I could copy the same optimizations that GNU wc does and be about as
 fast, but I wanted to challenge myself so I didn't look at the GNU wc code.
+
+License
+-------
+Rust-wc is distributed under the MIT license. See [LICENSE](LICENSE).
